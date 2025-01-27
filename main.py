@@ -108,19 +108,15 @@ async def process_event(request: Request):
     logger.debug(json.dumps(data))
 
     # Build payload
-    payload = {
-        "pyzejsonpayload": data
-    }
+    payload = {"pyzejsonpayload": data, "pyzeContext": {
+        # "ip": ip,
+        "receivedEpoch": int(time.time_ns() / 1_000_000),
+    }}
 
     # # Extract IP (if x-forwarded-for and comma present)
     # ip = request.headers.get("x-forwarded-for")
     # if ip and "," in ip:
     #     ip = ip.split(",")[-2].strip()
-
-    payload["pyzeContext"] = {
-        # "ip": ip,
-        "receivedEpoch": int(time.time_ns() / 1_000_000),
-    }
 
     # Add messageId if missing
     if "messageId" not in payload["pyzejsonpayload"]:
@@ -159,4 +155,15 @@ async def process_event(request: Request):
 # Entry Point (Local Run)
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=Config.LISTEN_PORT)
+    try:
+        # Print configuration
+        print("Application Configuration:")
+        print(f"KAFKA_BOOTSTRAP_SERVERS: {Config.KAFKA_BOOTSTRAP_SERVERS}")
+        print(f"KAFKA_TOPIC_INGESTION_RAW: {Config.KAFKA_TOPIC_INGESTION_RAW}")
+        print(f"LISTEN_PORT: {Config.LISTEN_PORT}")
+
+        # Start the server
+        uvicorn.run(app, host="0.0.0.0", port=int(Config.LISTEN_PORT))
+    except Exception as e:
+        error_logger.error(f"Failed to start the server: {e}")
+        raise

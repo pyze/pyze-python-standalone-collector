@@ -30,3 +30,6 @@ workspace.xml
 error.log
 jmeter.log
 /.portal/intellij.edn
+/dist/
+/main.spec
+/build/

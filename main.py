@@ -55,12 +55,10 @@ app.add_middleware(
 # Kafka Delivery Callback
 # ------------------------------------------------------------------------------
 def delivery_report(err, msg):
-    if err is not None:
-        error_logger.error(f"Delivery failed: {err}")
+    if err:
+        error_logger.error(f"Delivery failed: {err}. Message: {msg.value()}")
     else:
-        logger.debug(
-            f"Message delivered to {msg.topic()} [{msg.partition()}] offset {msg.offset()}"
-        )
+        logger.info(f"Message delivered to {msg.topic()} [Partition: {msg.partition()}], Offset: {msg.offset()}")
 
 
 # ------------------------------------------------------------------------------
@@ -68,11 +66,12 @@ def delivery_report(err, msg):
 # ------------------------------------------------------------------------------
 @app.get("/", summary="Healthcheck usage")
 def healthcheck():
-    """
-    A simple GET endpoint for health checks.
-    Returns {"status": "ok"} with HTTP 200.
-    """
-    return JSONResponse(content={"status": "ok"}, status_code=200)
+    try:
+        producer.list_topics(timeout=5)  # Example Kafka readiness check
+        return JSONResponse(content={"status": "ok"}, status_code=200)
+    except Exception as exc:
+        error_logger.error(f"Healthcheck failure: {exc}")
+        return JSONResponse(content={"status": "unhealthy"}, status_code=503)
 
 
 # ------------------------------------------------------------------------------

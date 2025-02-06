@@ -6,7 +6,7 @@ pip-selfcheck.json
 __pycache__/
 *.py[cod]
 *$py.class
-
+b
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -33,3 +33,4 @@ jmeter.log
 /dist/
 /main.spec
 /build/
+/runtime.log

@@ -16,7 +16,10 @@ from config import Config
 # Logging Setup
 # ------------------------------------------------------------------------------
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+runtime_handler = logging.FileHandler("runtime.log")
+runtime_handler.setLevel(logging.DEBUG)
+logger.addHandler(runtime_handler)
 
 error_logger = logging.getLogger("error_logger")
 error_logger.setLevel(logging.ERROR)
@@ -58,7 +61,7 @@ def delivery_report(err, msg):
     if err:
         error_logger.error(f"Delivery failed: {err}. Message: {msg.value()}")
     else:
-        logger.info(f"Message delivered to {msg.topic()} [Partition: {msg.partition()}], Offset: {msg.offset()}")
+        logger.debug(f"Message delivered to {msg.topic()} [Partition: {msg.partition()}], Offset: {msg.offset()}")
 
 
 # ------------------------------------------------------------------------------
@@ -85,7 +88,7 @@ async def process_event(request: Request):
     """
     # Log raw request data
     raw_body = await request.body()
-    logger.info(raw_body)
+    logger.debug(raw_body)
 
     # Attempt to parse JSON
     try:
@@ -156,10 +159,10 @@ async def process_event(request: Request):
 if __name__ == "__main__":
     try:
         # Print configuration
-        print("Application Configuration:")
-        print(f"KAFKA_BOOTSTRAP_SERVERS: {Config.KAFKA_BOOTSTRAP_SERVERS}")
-        print(f"KAFKA_TOPIC_INGESTION_RAW: {Config.KAFKA_TOPIC_INGESTION_RAW}")
-        print(f"LISTEN_PORT: {Config.LISTEN_PORT}")
+        logger.info("Application Configuration:")
+        logger.info(f"KAFKA_BOOTSTRAP_SERVERS: {Config.KAFKA_BOOTSTRAP_SERVERS}")
+        logger.info(f"KAFKA_TOPIC_INGESTION_RAW: {Config.KAFKA_TOPIC_INGESTION_RAW}")
+        logger.info(f"LISTEN_PORT: {Config.LISTEN_PORT}")
 
         # Start the server
         uvicorn.run(app, host="0.0.0.0", port=int(Config.LISTEN_PORT))

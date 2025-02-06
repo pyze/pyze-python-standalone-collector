@@ -30,13 +30,22 @@ error_logger.addHandler(error_handler)
 # ------------------------------------------------------------------------------
 # Confluent Kafka Producer
 # ------------------------------------------------------------------------------
-bootstrap_servers = (
-    ",".join(Config.KAFKA_BOOTSTRAP_SERVERS)
-    if isinstance(Config.KAFKA_BOOTSTRAP_SERVERS, list)
-    else Config.KAFKA_BOOTSTRAP_SERVERS
-)
+# Base Kafka configuration
+kafka_conf = {
+    'bootstrap.servers': Config.KAFKA_BOOTSTRAP_SERVERS
+}
 
-producer = Producer({"bootstrap.servers": bootstrap_servers})
+# Add SSL configuration only if enabled
+if Config.KAFKA_USE_SSL:
+    kafka_conf.update({
+        'security.protocol': 'SSL',
+        'ssl.ca.location': Config.KAFKA_SSL_CA_LOCATION,
+        'ssl.certificate.location': Config.KAFKA_SSL_CERTIFICATE_LOCATION,
+        'ssl.key.location': Config.KAFKA_SSL_KEY_LOCATION
+    })
+
+producer = Producer(kafka_conf)
+
 KAFKA_TOPIC_INGESTION_RAW = Config.KAFKA_TOPIC_INGESTION_RAW
 
 # ------------------------------------------------------------------------------
